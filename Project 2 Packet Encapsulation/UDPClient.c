@@ -1,4 +1,5 @@
 /************* UDP CLIENT CODE *******************/
+// example
 
 #include <stdio.h>
 #include <sys/socket.h>
