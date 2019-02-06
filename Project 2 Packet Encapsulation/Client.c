@@ -55,7 +55,7 @@ void interpretReceivedMsg(char* buffer) {
 		//rhmp
 		printf("dstPort: %u\n", dstPort);
 		printf("srcPort: %u\n", srcPort);
-		printf("message: %s\n", buffer+9);
+		printf("message: %s\n", buffer+8);
 	}
 
 	if (checkChecksum(buffer))
