@@ -1,6 +1,6 @@
 #include "UDP.h"
 
-int udp(char* message, char* buffer, int bufferLen) {
+int udp(char* message, int messageLen, char* buffer, int bufferLen) {
 	int clientSocket, nBytes;
     
     struct sockaddr_in clientAddr, serverAddr;
@@ -36,7 +36,8 @@ int udp(char* message, char* buffer, int bufferLen) {
     memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
 
     /* send a message to the server */
-    if (sendto(clientSocket, message, strlen(message), 0,
+    // printf("%s\n", );
+    if (sendto(clientSocket, message, messageLen, 0,
             (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0) {
         perror("sendto failed");
         return 0;

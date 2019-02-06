@@ -6,4 +6,4 @@
 #define SERVER "137.112.41.52"
 #define PORT 1874
 
-int udp(char*, char*, int);
+int udp(char*, int, char*, int);
