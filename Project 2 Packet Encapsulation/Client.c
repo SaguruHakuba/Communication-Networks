@@ -16,12 +16,13 @@ int main() {
 	uint8_t rhmpFrame[8];
 
 	// step1 : RHP "Hello"
-	// printf("\nStep 1:\n");
-	// encrypt_rhp(MESSAGE, strlen(MESSAGE), 1, 2256, frame);
-	// for(int loop = 0; loop < RHPLength; loop++)
-	//       printf("%d ", frame[loop]);
-	// udp(frame, RHPLength, buffer, BUFSIZE);
-	// interpretReceivedMsg(buffer);
+	printf("Step 1:\n");
+	encrypt_rhp(MESSAGE, strlen(MESSAGE), 1, 2256, frame);
+	for(int loop = 0; loop < RHPLength; loop++)
+	      printf("%d ", frame[loop]);
+	udp(frame, RHPLength, buffer, BUFSIZE);
+	interpretReceivedMsg(buffer);
+	sleep(5);
 	
 	// step2: 
 	printf("\nStep 2:\n");
@@ -31,15 +32,25 @@ int main() {
 	      printf("%d ", frame[loop]);
 	udp(frame, 10, buffer, BUFSIZE);
 	interpretReceivedMsg(buffer);
+	sleep(10);
+
+	// step3 :
+	printf("\nStep 3:\n");
+	encrypt_rhmp(0, 0, 2, rhmpFrame, 0);
+	encrypt_rhp(rhmpFrame, 3, 0, 2256, frame);
+	for(int loop = 0; loop < 10; loop++)
+		printf("%d ", frame[loop]);
+	udp(frame, 10, buffer, BUFSIZE);
+	interpretReceivedMsg(buffer);
 }
 
 void interpretReceivedMsg(char* buffer) {
 	uint16_t srcPort = 0, dstPort = 0;
 
-	dstPort += buffer[1]+(buffer[1]<0)*256;
-	dstPort += 256*(buffer[2]+(buffer[2]<0)*256);
-	srcPort += buffer[3]+(buffer[3]<0)*256;
-	srcPort += 256*(buffer[4]+(buffer[4]<0)*256);
+	dstPort += buffer[1] + (buffer[1] < 0) * 256;
+	dstPort += 256 * (buffer[2] + (buffer[2] < 0) * 256);
+	srcPort += buffer[3] + (buffer[3] < 0) * 256;
+	srcPort += 256 * (buffer[4] + (buffer[4] < 0) * 256);
 
 	printf("\nReceived from server: \n");
 	for(int i = 0; i < 80; i++) {
@@ -55,13 +66,21 @@ void interpretReceivedMsg(char* buffer) {
 		//rhmp
 		printf("dstPort: %u\n", dstPort);
 		printf("srcPort: %u\n", srcPort);
-		printf("message: %s\n", buffer+8);
+		if (buffer[5] % 64 == 16) {
+			printf("message: %s\n", buffer+8);
+		} else if (buffer[5] %  64 == 4) {
+			uint32_t id = buffer[8] + buffer[9] * 256 + buffer[10] * 256 * 256 + buffer[11] * 256 * 256 * 256;
+			printf("message: (id) %u\n", id);
+		} else {
+
+		}
+		
 	}
 
 	if (checkChecksum(buffer))
-		printf("Checksum is valid.");
+		printf("Checksum is valid.\n");
 	else 
-		printf("Checksum bad.");
+		printf("Checksum bad.\n");
 }
 
 _Bool checkChecksum(char* buffer) {
@@ -71,7 +90,7 @@ _Bool checkChecksum(char* buffer) {
 		bufferLen = bufferLen + 7 + (bufferLen % 2 == 0);
 	} else {
 		bufferLen = buffer[7];
-		printf("bufferLen before is %u\n", bufferLen);
+		// printf("bufferLen before is %u\n", bufferLen);
 		bufferLen = bufferLen + 10 + (bufferLen % 2 == 1);
 	}
 
@@ -89,6 +108,6 @@ _Bool checkChecksum(char* buffer) {
 	total = total + total / 65536;
 	total = total % 65536;
 
-	printf("Checksum is %u\n Buffer length is %u\n", total, bufferLen);
+	// printf("Checksum is %u\n Buffer length is %u\n", total, bufferLen);
 	return total == 0x0000ffff;
 }
