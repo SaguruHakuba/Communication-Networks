@@ -1,5 +1,6 @@
 #include "UDP.h"
 
+// basically come from example client
 int udp(char* message, int messageLen, char* buffer, int bufferLen) {
 	int clientSocket, nBytes;
     

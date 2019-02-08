@@ -1,7 +1,6 @@
 #include "UDP.c"
 #include "RHP.c"
 #include "RHMP.c"
-// #include "Client.h"
 
 #define MESSAGE "hello"
 #define BUFSIZE 1024
@@ -22,9 +21,9 @@ int main() {
 	      printf("%d ", frame[loop]);
 	udp(frame, RHPLength, buffer, BUFSIZE);
 	interpretReceivedMsg(buffer);
-	sleep(5);
+	sleep(5); // sleep for a while in case high amount of data for the sever
 	
-	// step2: 
+	// step2: RHMP Message Request
 	printf("\nStep 2:\n");
 	encrypt_rhmp(0, 0, 8, rhmpFrame, 0);
 	encrypt_rhp(rhmpFrame, 3, 0, 2256, frame);
@@ -32,9 +31,9 @@ int main() {
 	      printf("%d ", frame[loop]);
 	udp(frame, 10, buffer, BUFSIZE);
 	interpretReceivedMsg(buffer);
-	sleep(10);
+	sleep(10);	// sleep for a while in case high amount of data for the sever
 
-	// step3 :
+	// step3 : RHMP ID Request
 	printf("\nStep 3:\n");
 	encrypt_rhmp(0, 0, 2, rhmpFrame, 0);
 	encrypt_rhp(rhmpFrame, 3, 0, 2256, frame);
@@ -45,6 +44,7 @@ int main() {
 }
 
 void interpretReceivedMsg(char* buffer) {
+	// for interpreting the message we received
 	uint16_t srcPort = 0, dstPort = 0;
 
 	dstPort += buffer[1] + (buffer[1] < 0) * 256;
@@ -59,6 +59,7 @@ void interpretReceivedMsg(char* buffer) {
 
 	printf("\nRHP type: %u\n", buffer[0]);
 	if (buffer[0] == 1) {
+		//rhp
 		printf("length: %u\n", dstPort);
 		printf("srcPort: %u\n", srcPort);
 		printf("message: %s\n", buffer+5);
@@ -67,12 +68,14 @@ void interpretReceivedMsg(char* buffer) {
 		printf("dstPort: %u\n", dstPort);
 		printf("srcPort: %u\n", srcPort);
 		if (buffer[5] % 64 == 16) {
+			// message request
 			printf("message: %s\n", buffer+8);
 		} else if (buffer[5] %  64 == 4) {
+			// id request
 			uint32_t id = buffer[8] + buffer[9] * 256 + buffer[10] * 256 * 256 + buffer[11] * 256 * 256 * 256;
 			printf("message: (id) %u\n", id);
 		} else {
-
+			// do nothing
 		}
 		
 	}
@@ -84,6 +87,7 @@ void interpretReceivedMsg(char* buffer) {
 }
 
 _Bool checkChecksum(char* buffer) {
+	// verify if the message meets the checksum
 	int bufferLen = -1;
 	if (buffer[0] == 1) {
 		bufferLen = buffer[1] + buffer[2] * 256;
